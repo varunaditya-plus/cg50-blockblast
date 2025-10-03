@@ -16,19 +16,21 @@
 #define TETRIS_SPACING 70  // Vertical spacing between blocks
 
 // Tetris piece definitions (4x4 matrices)
-#define TETRIS_PIECES 7
+#define TETRIS_PIECES 39
 
 // Piece difficulty categories
 typedef enum {
     PIECE_EASY = 0,    // Straights and blocks
     PIECE_MEDIUM = 1,  // Corners and L
-    PIECE_HARD = 2     // Zigzag and T
+    PIECE_HARD = 2,    // Zigzag and T
+    PIECE_RARE = 3     // Special large pieces
 } piece_difficulty_t;
 
 // Difficulty weights (higher = more likely to spawn)
 #define EASY_WEIGHT 10
 #define MEDIUM_WEIGHT 5
 #define HARD_WEIGHT 3
+#define RARE_WEIGHT 1
 
 // Function declarations
 void tetris_blocks_init(void);

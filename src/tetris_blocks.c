@@ -7,68 +7,294 @@
 #include "renderer.h"
 
 // pieces are in 4x4 matrices where 1 = block, 0 = empty
+// 7 base pieces × 4 rotations each = 28 total pieces
 static const int tetris_pieces[TETRIS_PIECES][4][4] = {
-    // I-piece (line)
+    // I-piece (line) - 4 rotations
     {
         {0, 0, 0, 0},
         {1, 1, 1, 1},
         {0, 0, 0, 0},
         {0, 0, 0, 0}
     },
-    // O-piece (square)
+    {
+        {0, 0, 1, 0},
+        {0, 0, 1, 0},
+        {0, 0, 1, 0},
+        {0, 0, 1, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {1, 1, 1, 1},
+        {0, 0, 0, 0}
+    },
+    {
+        {0, 1, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 0, 0}
+    },
+    
+    // O-piece (square) - 4 rotations (all identical)
     {
         {0, 0, 0, 0},
         {0, 1, 1, 0},
         {0, 1, 1, 0},
         {0, 0, 0, 0}
     },
-    // T-piece
+    {
+        {0, 0, 0, 0},
+        {0, 1, 1, 0},
+        {0, 1, 1, 0},
+        {0, 0, 0, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 1, 1, 0},
+        {0, 1, 1, 0},
+        {0, 0, 0, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 1, 1, 0},
+        {0, 1, 1, 0},
+        {0, 0, 0, 0}
+    },
+    
+    // T-piece - 4 rotations
     {
         {0, 0, 0, 0},
         {0, 1, 0, 0},
         {1, 1, 1, 0},
         {0, 0, 0, 0}
     },
-    // S-piece
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 1, 0},
+        {0, 1, 0, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {1, 1, 1, 0},
+        {0, 1, 0, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {1, 1, 0, 0},
+        {0, 1, 0, 0}
+    },
+    
+    // S-piece - 4 rotations
     {
         {0, 0, 0, 0},
         {0, 1, 1, 0},
         {1, 1, 0, 0},
         {0, 0, 0, 0}
     },
-    // Z-piece
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 1, 0},
+        {0, 0, 1, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 1, 1, 0},
+        {1, 1, 0, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {1, 0, 0, 0},
+        {1, 1, 0, 0},
+        {0, 1, 0, 0}
+    },
+    
+    // Z-piece - 4 rotations
     {
         {0, 0, 0, 0},
         {1, 1, 0, 0},
         {0, 1, 1, 0},
         {0, 0, 0, 0}
     },
-    // J-piece
+    {
+        {0, 0, 0, 0},
+        {0, 0, 1, 0},
+        {0, 1, 1, 0},
+        {0, 1, 0, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {1, 1, 0, 0},
+        {0, 1, 1, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {1, 1, 0, 0},
+        {1, 0, 0, 0}
+    },
+    
+    // J-piece - 4 rotations
     {
         {0, 0, 0, 0},
         {1, 0, 0, 0},
         {1, 1, 1, 0},
         {0, 0, 0, 0}
     },
-    // L-piece
+    {
+        {0, 0, 0, 0},
+        {0, 1, 1, 0},
+        {0, 1, 0, 0},
+        {0, 1, 0, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {1, 1, 1, 0},
+        {0, 0, 1, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 0, 0},
+        {1, 1, 0, 0}
+    },
+    
+    // L-piece - 4 rotations
     {
         {0, 0, 0, 0},
         {0, 0, 1, 0},
         {1, 1, 1, 0},
         {0, 0, 0, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 1, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {1, 1, 1, 0},
+        {1, 0, 0, 0}
+    },
+    {
+        {0, 0, 0, 0},
+        {1, 1, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 0, 0}
+    },
+    
+    // 2x3 piece (6 blocks in 2x3 rectangle)
+    {
+        {0, 0, 0, 0},
+        {1, 1, 0, 0},
+        {1, 1, 0, 0},
+        {1, 1, 0, 0}
+    },
+    
+    // 3x2 piece (6 blocks in 3x2 rectangle)
+    {
+        {0, 0, 0, 0},
+        {1, 1, 1, 0},
+        {1, 1, 1, 0},
+        {0, 0, 0, 0}
+    },
+    
+    // 3x3 piece (9 blocks in 3x3 square) - rare
+    {
+        {0, 0, 0, 0},
+        {1, 1, 1, 0},
+        {1, 1, 1, 0},
+        {1, 1, 1, 0}
+    },
+    
+    // L pieces
+    {
+        {0, 0, 1, 0},
+        {0, 0, 1, 0},
+        {1, 1, 1, 0},
+        {0, 0, 0, 0}
+    },
+    {
+        {0, 1, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 1, 1},
+        {0, 0, 0, 0}
+    },
+    {
+        {1, 1, 1, 0},
+        {1, 0, 0, 0},
+        {1, 0, 0, 0},
+        {0, 0, 0, 0}
+    },
+    {
+        {0, 1, 1, 1},
+        {0, 0, 0, 1},
+        {0, 0, 0, 1},
+        {0, 0, 0, 0}
+    },
+    
+    // Corner L pieces
+    {
+        {1, 1, 0, 0},
+        {1, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    },
+    {
+        {1, 1, 0, 0},
+        {0, 1, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    },
+    {
+        {1, 0, 0, 0},
+        {1, 1, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    },
+    {
+        {0, 1, 0, 0},
+        {1, 1, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
     }
 };
 
 // Piece difficulty mapping
-// 0=I (easy), 1=O (easy), 2=T (hard), 3=S (hard), 4=Z (hard), 5=J (medium), 6=L (medium)
+// 39 pieces: I-piece (0-3): easy, O-piece (4-7): easy, T-piece (8-11): hard, S-piece (12-15): hard, Z-piece (16-19): hard, J-piece (20-23): medium, L-piece (24-27): medium, 2x3 (28): medium, 3x2 (29): medium, 3x3 (30): rare, L variations (31-34): medium, corner L (35-38): medium
 static const piece_difficulty_t piece_difficulties[TETRIS_PIECES] = {
-    PIECE_EASY,   // I-piece (straight line)
-    PIECE_EASY,   // O-piece (square/block)
-    PIECE_HARD,   // T-piece
-    PIECE_HARD,   // S-piece (zigzag)
-    PIECE_HARD,   // Z-piece (zigzag)
-    PIECE_MEDIUM, // J-piece (L shape)
-    PIECE_MEDIUM  // L-piece (L shape)
+    // I-piece rotations (0-3)
+    PIECE_EASY, PIECE_EASY, PIECE_EASY, PIECE_EASY,
+    // O-piece rotations (4-7)
+    PIECE_EASY, PIECE_EASY, PIECE_EASY, PIECE_EASY,
+    // T-piece rotations (8-11)
+    PIECE_HARD, PIECE_HARD, PIECE_HARD, PIECE_HARD,
+    // S-piece rotations (12-15)
+    PIECE_HARD, PIECE_HARD, PIECE_HARD, PIECE_HARD,
+    // Z-piece rotations (16-19)
+    PIECE_HARD, PIECE_HARD, PIECE_HARD, PIECE_HARD,
+    // J-piece rotations (20-23)
+    PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM,
+    // L-piece rotations (24-27)
+    PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM,
+    // 2x3 piece (28)
+    PIECE_MEDIUM,
+    // 3x2 piece (29)
+    PIECE_MEDIUM,
+    // 3x3 piece (30) - rare
+    PIECE_RARE,
+    // L piece variations (31-34)
+    PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM,
+    // Corner L piece variations (35-38)
+    PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM
 };
 
 int tetris_piece_cell(int piece_type, int row, int col)
@@ -310,6 +536,7 @@ int tetris_generate_weighted_piece(void)
             case PIECE_EASY:   total_weight += EASY_WEIGHT; break;
             case PIECE_MEDIUM: total_weight += MEDIUM_WEIGHT; break;
             case PIECE_HARD:   total_weight += HARD_WEIGHT; break;
+            case PIECE_RARE:   total_weight += RARE_WEIGHT; break;
         }
     }
     
@@ -327,6 +554,7 @@ int tetris_generate_weighted_piece(void)
             case PIECE_EASY:   piece_weight = EASY_WEIGHT; break;
             case PIECE_MEDIUM: piece_weight = MEDIUM_WEIGHT; break;
             case PIECE_HARD:   piece_weight = HARD_WEIGHT; break;
+            case PIECE_RARE:   piece_weight = RARE_WEIGHT; break;
         }
         
         current_weight += piece_weight;

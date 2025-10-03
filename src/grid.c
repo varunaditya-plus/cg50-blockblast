@@ -480,7 +480,7 @@ static int simulate_placement_with_clearing(int piece_type, int gx, int gy)
     }
     
     // check if any piece can fit in the cleared grid
-    for (int i = 0; i < 7; i++) // Check all 7 piece types
+    for (int i = 0; i < TETRIS_PIECES; i++) // Check all piece types
     {
         for (int gy = 0; gy < GRID_SIZE; gy++)
         {
