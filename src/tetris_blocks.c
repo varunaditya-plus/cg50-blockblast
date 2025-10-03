@@ -4,6 +4,7 @@
 #include <time.h>
 #include "tetris_blocks.h"
 #include "grid.h"
+#include "renderer.h"
 
 // pieces are in 4x4 matrices where 1 = block, 0 = empty
 static const int tetris_pieces[TETRIS_PIECES][4][4] = {
@@ -145,56 +146,7 @@ static void draw_tetris_piece_core(int x, int y, int piece_type, int is_selected
                 int block_x = x + col * (block_size + gap);
                 int block_y = y + row * (block_size + gap);
 
-                if (is_selected)
-                {
-                    // Draw white outline for selected pieces
-                    for (int py = 0; py < block_size; py++)
-                    {
-                        for (int px = 0; px < block_size; px++)
-                        {
-                            dpixel(block_x + px, block_y + py, COLOR_TETRIS_RED);
-                        }
-                    }
-                    // Draw  white outline
-                    for (int outline = 0; outline < 3; outline++)
-                    {
-                        // Top edge
-                        for (int px = 0; px < block_size; px++)
-                        {
-                            if (px + outline < block_size)
-                                dpixel(block_x + px, block_y + outline, COLOR_TETRIS_WHITE);
-                        }
-                        // Bottom edge
-                        for (int px = 0; px < block_size; px++)
-                        {
-                            if (px + outline < block_size)
-                                dpixel(block_x + px, block_y + block_size - 1 - outline, COLOR_TETRIS_WHITE);
-                        }
-                        // Left edge
-                        for (int py = 0; py < block_size; py++)
-                        {
-                            if (py + outline < block_size)
-                                dpixel(block_x + outline, block_y + py, COLOR_TETRIS_WHITE);
-                        }
-                        // Right edge
-                        for (int py = 0; py < block_size; py++)
-                        {
-                            if (py + outline < block_size)
-                                dpixel(block_x + block_size - 1 - outline, block_y + py, COLOR_TETRIS_WHITE);
-                        }
-                    }
-                }
-                else
-                {
-                    // Draw solid red for non-selected pieces
-                    for (int py = 0; py < block_size; py++)
-                    {
-                        for (int px = 0; px < block_size; px++)
-                        {
-                            dpixel(block_x + px, block_y + py, COLOR_TETRIS_RED);
-                        }
-                    }
-                }
+                renderer_draw_beveled_tile(block_x, block_y, block_size, is_selected);
             }
         }
     }
