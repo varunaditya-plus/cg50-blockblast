@@ -17,6 +17,9 @@ static int active_block_index = -1;  // -1 means no active block
 // Persistent occupancy of the 8x8 grid locked cells
 static int grid_occupied[GRID_SIZE][GRID_SIZE];
 
+// Internal render state
+static int is_animating = 0; // 1 while performing line-clear animation
+
 
 // draw a single filled cell at grid coords with outline
 static void draw_filled_cell(int grid_x, int grid_y)
@@ -90,30 +93,64 @@ static void clear_full_lines(void)
 		if (all_filled) lines_cleared++;
 	}
 
-	// clear marked rows and columns
-	for (int y = 0; y < GRID_SIZE; y++)
+
+	// If no lines to clear, return early
+	if (lines_cleared == 0)
 	{
-		for (int x = 0; x < GRID_SIZE; x++)
-		{
-			if (full_rows[y] || full_cols[x])
-			{
-				grid_occupied[y][x] = 0;
-			}
-		}
+		return;
 	}
 
-	// award points based on lines cleared
-	if (lines_cleared > 0)
+	// Animate clearing as a sweep: rows left->right, cols top->bottom
+	is_animating = 1;
+	for (int step = 0; step < GRID_SIZE; step++)
 	{
-		if (lines_cleared == 1)
-			score_add_points(SCORE_LINE_CLEAR_1);
-		else if (lines_cleared == 2)
-			score_add_points(SCORE_LINE_CLEAR_2);
-		else if (lines_cleared == 3)
-			score_add_points(SCORE_LINE_CLEAR_3);
-		else if (lines_cleared >= 4)
-			score_add_points(SCORE_LINE_CLEAR_4_PLUS);
+		// For each full row, clear the next cell from left to right
+		for (int y = 0; y < GRID_SIZE; y++)
+		{
+			if (full_rows[y])
+			{
+				int x = step;
+				if (x >= 0 && x < GRID_SIZE)
+				{
+					grid_occupied[y][x] = 0;
+				}
+			}
+		}
+		// For each full column, clear the next cell from top to bottom
+		for (int x = 0; x < GRID_SIZE; x++)
+		{
+			if (full_cols[x])
+			{
+				int y = step;
+				if (y >= 0 && y < GRID_SIZE)
+				{
+					grid_occupied[y][x] = 0;
+				}
+			}
+		}
+
+		// Redraw the scene after this step
+		dclear(COLOR_BACKGROUND);
+		grid_draw();
+		grid_draw_placed_blocks();
+		grid_draw_score();
+		tetris_blocks_draw();
+		dupdate();
+
+		// Small delay for visible animation (busy-wait)
+		for (volatile int w = 0; w < 120000; w++) { }
 	}
+	is_animating = 0;
+
+	// award points based on lines cleared
+	if (lines_cleared == 1)
+		score_add_points(SCORE_LINE_CLEAR_1);
+	else if (lines_cleared == 2)
+		score_add_points(SCORE_LINE_CLEAR_2);
+	else if (lines_cleared == 3)
+		score_add_points(SCORE_LINE_CLEAR_3);
+	else if (lines_cleared >= 4)
+		score_add_points(SCORE_LINE_CLEAR_4_PLUS);
 }
 
 void grid_init(void)
@@ -527,7 +564,7 @@ void grid_draw_placed_blocks(void)
     }
 
     // Then draw the active block if any (selected color handled by draw function)
-    if (active_block_index != -1 && placed_blocks[active_block_index].piece_type != BLOCK_TYPE_EMPTY)
+	if (!is_animating && active_block_index != -1 && placed_blocks[active_block_index].piece_type != BLOCK_TYPE_EMPTY)
     {
         int screen_x = GRID_X_OFFSET + placed_blocks[active_block_index].grid_x * GRID_CELL_SIZE;
         int screen_y = GRID_Y_OFFSET + placed_blocks[active_block_index].grid_y * GRID_CELL_SIZE;
