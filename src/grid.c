@@ -9,6 +9,9 @@
 #define SCREEN_WIDTH 396
 #define SCREEN_HEIGHT 224
 
+// color for particles
+#define COLOR_TETRIS_RED 0xF800
+
 // Grid state
 static placed_block_t placed_blocks[MAX_PLACED_BLOCKS];
 static int num_placed_blocks = 0;
@@ -19,6 +22,93 @@ static int grid_occupied[GRID_SIZE][GRID_SIZE];
 
 // Internal render state
 static int is_animating = 0; // 1 while performing line-clear animation
+
+// simple particle system
+#define MAX_PARTICLES 256
+typedef struct {
+	int active;
+	int x;
+	int y;
+	int vx;
+	int vy;
+	int life;
+} particle_t;
+
+static particle_t particles[MAX_PARTICLES];
+
+// PRNG
+static unsigned int rng_state = 123456789u;
+static unsigned int prng_next(void)
+{
+	// xorshift32
+	unsigned int x = rng_state;
+	x ^= x << 13;
+	x ^= x >> 17;
+	x ^= x << 5;
+	rng_state = x;
+	return x;
+}
+
+static int rand_range(int min_inclusive, int max_inclusive)
+{
+	unsigned int r = prng_next();
+	int span = max_inclusive - min_inclusive + 1;
+	if (span <= 0) return min_inclusive;
+	return min_inclusive + (int)(r % (unsigned int)span);
+}
+
+static void spawn_cell_explosion(int grid_x, int grid_y)
+{
+	int cell_x = GRID_X_OFFSET + grid_x * GRID_CELL_SIZE;
+	int cell_y = GRID_Y_OFFSET + grid_y * GRID_CELL_SIZE;
+	int cx = cell_x + GRID_CELL_SIZE / 2;
+	int cy = cell_y + GRID_CELL_SIZE / 2;
+
+	// Spawn a handful of particles
+	for (int i = 0; i < 6; i++)
+	{
+		// Find a free slot
+		for (int p = 0; p < MAX_PARTICLES; p++)
+		{
+			if (!particles[p].active)
+			{
+				particles[p].active = 1;
+				particles[p].x = cx;
+				particles[p].y = cy;
+				particles[p].vx = rand_range(-2, 2);
+				particles[p].vy = rand_range(-3, -1);
+				particles[p].life = rand_range(6, 12);
+				break;
+			}
+		}
+	}
+}
+
+static void update_and_draw_particles(void)
+{
+	for (int i = 0; i < MAX_PARTICLES; i++)
+	{
+		if (!particles[i].active) continue;
+		// Update
+		particles[i].x += particles[i].vx;
+		particles[i].y += particles[i].vy;
+		// gravity
+		particles[i].vy += 1;
+		particles[i].life -= 1;
+		if (particles[i].life <= 0) {
+			particles[i].active = 0;
+			continue;
+		}
+		// Draw as a 2x2 square for a bigger particle
+		for (int py = 0; py < 2; py++)
+		{
+			for (int px = 0; px < 2; px++)
+			{
+				dpixel(particles[i].x + px, particles[i].y + py, COLOR_TETRIS_RED);
+			}
+		}
+	}
+}
 
 
 // draw a single filled cell at grid coords with outline
@@ -112,7 +202,11 @@ static void clear_full_lines(void)
 				int x = step;
 				if (x >= 0 && x < GRID_SIZE)
 				{
-					grid_occupied[y][x] = 0;
+					if (grid_occupied[y][x])
+					{
+						grid_occupied[y][x] = 0;
+						spawn_cell_explosion(x, y);
+					}
 				}
 			}
 		}
@@ -124,7 +218,11 @@ static void clear_full_lines(void)
 				int y = step;
 				if (y >= 0 && y < GRID_SIZE)
 				{
-					grid_occupied[y][x] = 0;
+					if (grid_occupied[y][x])
+					{
+						grid_occupied[y][x] = 0;
+						spawn_cell_explosion(x, y);
+					}
 				}
 			}
 		}
@@ -135,6 +233,7 @@ static void clear_full_lines(void)
 		grid_draw_placed_blocks();
 		grid_draw_score();
 		tetris_blocks_draw();
+		update_and_draw_particles();
 		dupdate();
 
 		// Small delay for visible animation (busy-wait)
