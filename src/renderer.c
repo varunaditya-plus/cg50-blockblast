@@ -30,6 +30,8 @@ void renderer_draw_game_over(void)
     
     // Draw "GAME OVER" text
     font_draw_text(center_x, center_y, "GAME OVER. PRESS F1 TO RESET.");
+    // Draw footer instructions
+    renderer_draw_footer();
 }
 
 static inline uint16_t blend565(uint16_t a, uint16_t b, int t /*0..255*/)
@@ -125,5 +127,13 @@ void renderer_redraw_all(void)
     grid_draw_placed_blocks();
     grid_draw_score();
     tetris_blocks_draw();
+    renderer_draw_footer();
     dupdate();
+}
+
+void renderer_draw_footer(void)
+{
+    int x = 4;
+    int y = SCREEN_HEIGHT - 10;
+    font_draw_text(x, y, "F1=RESET, F6=SAVE, MENU=EXIT GAME");
 }

@@ -4,6 +4,7 @@
 #include "game_state.h"
 #include "grid.h"
 #include "tetris_blocks.h"
+#include "renderer.h"
 
 input_action_t input_handle_key(key_event_t key)
 {
@@ -48,6 +49,7 @@ void input_process_action(input_action_t action)
                 grid_draw_placed_blocks();
                 grid_draw_score();
                 tetris_blocks_draw();
+                renderer_draw_footer();
                 dupdate();
             }
             else
@@ -93,6 +95,7 @@ void input_process_action(input_action_t action)
                         grid_draw_placed_blocks();
                         grid_draw_score();
                         tetris_blocks_draw();
+                        renderer_draw_footer();
                         dupdate();
                         return;
                     }
@@ -118,6 +121,7 @@ void input_process_action(input_action_t action)
             grid_draw_placed_blocks();
             grid_draw_score();
             tetris_blocks_draw();
+            renderer_draw_footer();
             
             // Check for game over after piece placement
             game_state_check_game_over();
@@ -143,6 +147,7 @@ void input_process_action(input_action_t action)
             grid_draw_placed_blocks();
             grid_draw_score();
             tetris_blocks_draw();
+            renderer_draw_footer();
             break;
             
         case INPUT_ACTION_MOVE_DOWN:
@@ -165,6 +170,7 @@ void input_process_action(input_action_t action)
             grid_draw_placed_blocks();
             grid_draw_score();
             tetris_blocks_draw();
+            renderer_draw_footer();
             break;
             
         case INPUT_ACTION_MOVE_LEFT:
@@ -178,6 +184,7 @@ void input_process_action(input_action_t action)
             grid_draw_placed_blocks();
             grid_draw_score();
             tetris_blocks_draw();
+            renderer_draw_footer();
             break;
             
         case INPUT_ACTION_MOVE_RIGHT:
@@ -191,6 +198,7 @@ void input_process_action(input_action_t action)
             grid_draw_placed_blocks();
             grid_draw_score();
             tetris_blocks_draw();
+            renderer_draw_footer();
             break;
             
         case INPUT_ACTION_NONE:

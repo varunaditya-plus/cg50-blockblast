@@ -6,6 +6,7 @@
 #include "renderer.h"
 #include "grid.h"
 #include "score.h"
+#include "renderer.h"
 
 int main(void)
 {
@@ -17,6 +18,8 @@ int main(void)
         if(fp) fclose(fp);
     }
     
+    renderer_redraw_all();
+    
     while(1)
     {
         // if gameover show game over screen and wait for reset which ISNT FUCKING WORKING
@@ -27,6 +30,7 @@ int main(void)
             grid_draw_placed_blocks();
             grid_draw_score();
             renderer_draw_game_over();
+            renderer_draw_footer();
             dupdate();
             
             // Wait for key press

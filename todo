@@ -1,2 +1,3 @@
 - high score
 - game over logic
+- when selecting a piece and clicking exit to unselect it, it becomes red and doesnt retain its color
