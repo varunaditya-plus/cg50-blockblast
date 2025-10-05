@@ -38,10 +38,11 @@ void input_process_action(input_action_t action)
             // If there's an active block being placed, cancel it and return piece to sidebar
             if (grid_get_active_block() != -1)
             {
+                uint16_t color = grid_get_active_block_color();
                 int piece_type = grid_cancel_active_block();
                 if (piece_type >= 0)
                 {
-                    tetris_blocks_restore_piece(piece_type);
+                    tetris_blocks_restore_piece_with_color(piece_type, color);
                 }
                 // Redraw everything after canceling
                 dclear(COLOR_BACKGROUND);

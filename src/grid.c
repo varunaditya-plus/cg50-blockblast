@@ -613,6 +613,12 @@ int grid_cancel_active_block(void)
     return piece_type; // Return the piece type so it can be restored to sidebar
 }
 
+uint16_t grid_get_active_block_color(void)
+{
+    if (active_block_index == -1) return COLOR_TETRIS_RED;
+    return placed_blocks[active_block_index].color;
+}
+
 void grid_set_active_block(int block_index)
 {
     if (block_index >= 0 && block_index < MAX_PLACED_BLOCKS && 

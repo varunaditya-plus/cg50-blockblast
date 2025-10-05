@@ -57,6 +57,8 @@ int grid_can_any_piece_fit(int available_pieces[], int num_pieces);
 void grid_draw_game_over(void);
 // Cancel active block placement and return piece type for restoration
 int grid_cancel_active_block(void);
+// Get the color of the currently active block (or default red if none)
+uint16_t grid_get_active_block_color(void);
 // Score management
 int grid_get_score(void);
 void grid_draw_score(void);

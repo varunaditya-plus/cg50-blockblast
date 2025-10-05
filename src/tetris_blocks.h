@@ -51,6 +51,8 @@ void tetris_blocks_regenerate_if_needed(void);
 void tetris_blocks_get_available_pieces(int pieces[], int *count);
 // Restore a piece back to the sidebar (undo consumption)
 void tetris_blocks_restore_piece(int piece_type);
+// Restore a piece back with a specific color
+void tetris_blocks_restore_piece_with_color(int piece_type, uint16_t color);
 // Get piece difficulty category
 piece_difficulty_t tetris_get_piece_difficulty(int piece_type);
 // Check if a piece can be placed anywhere on the current grid

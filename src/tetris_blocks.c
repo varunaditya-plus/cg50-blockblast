@@ -510,6 +510,7 @@ void tetris_blocks_restore_piece(int piece_type)
         if (stored_pieces[i] < 0) // Empty slot found
         {
             stored_pieces[i] = piece_type;
+            stored_piece_colors[i] = random_palette_color();
             // Set this as the selected piece
             selected_block = i;
             return;
@@ -520,6 +521,29 @@ void tetris_blocks_restore_piece(int piece_type)
     if (selected_block >= 0 && selected_block < 3)
     {
         stored_pieces[selected_block] = piece_type;
+        stored_piece_colors[selected_block] = random_palette_color();
+    }
+}
+
+void tetris_blocks_restore_piece_with_color(int piece_type, uint16_t color)
+{
+    if (piece_type < 0 || piece_type >= TETRIS_PIECES) return;
+    // find first empty slot
+    for (int i = 0; i < 3; i++)
+    {
+        if (stored_pieces[i] < 0)
+        {
+            stored_pieces[i] = piece_type;
+            stored_piece_colors[i] = color;
+            selected_block = i;
+            return;
+        }
+    }
+    // (fallback): overwrite selection
+    if (selected_block >= 0 && selected_block < 3)
+    {
+        stored_pieces[selected_block] = piece_type;
+        stored_piece_colors[selected_block] = color;
     }
 }
 
