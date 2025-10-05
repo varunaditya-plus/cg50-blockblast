@@ -1,6 +1,8 @@
 #ifndef GRID_H
 #define GRID_H
 
+#include <gint/display.h>
+
 // Grid dimensions - 8x8 centered
 #define GRID_SIZE 8
 #define GRID_CELL_SIZE 20  // 20x20 pixel cells
@@ -30,13 +32,14 @@ typedef struct {
     int grid_x;
     int grid_y;
     int is_active;  // 1 if this block is currently being moved
+    uint16_t color;  // RGB565 color of the piece
 } placed_block_t;
 
 // Function declarations
 void grid_init(void);
 void grid_draw(void);
 void grid_clear(void);
-void grid_place_block(int piece_type, int grid_x, int grid_y);
+void grid_place_block(int piece_type, int grid_x, int grid_y, uint16_t color);
 void grid_move_active_block(int dx, int dy);
 void grid_set_active_block(int block_index);
 int grid_get_active_block(void);

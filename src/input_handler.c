@@ -106,7 +106,9 @@ void input_process_action(input_action_t action)
                     dupdate();
                     return;
                 }
-                grid_place_block(piece_type, px, py);
+                // Determine the color assigned to this selected slot
+                uint16_t color = tetris_blocks_get_piece_color_for_slot(current_selection);
+                grid_place_block(piece_type, px, py, color);
                 // Consume the sidebar piece used
                 tetris_blocks_consume_selected();
             }

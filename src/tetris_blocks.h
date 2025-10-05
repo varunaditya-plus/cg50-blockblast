@@ -40,6 +40,10 @@ void draw_tetris_piece_sized(int x, int y, int piece_type, int is_selected, int 
 int tetris_blocks_get_selection(void);
 void tetris_blocks_set_selection(int selection);
 int tetris_blocks_get_piece_type_for_selection(int selection);
+// Get the RGB565 color for a sidebar piece slot. Returns default red
+uint16_t tetris_blocks_get_piece_color_for_slot(int slot);
+// Get the RGB565 color for a given piece type in the sidebar, or default
+uint16_t tetris_blocks_get_color_for_piece_type(int piece_type);
 int tetris_piece_cell(int piece_type, int row, int col);
 void tetris_blocks_consume_selected(void);
 void tetris_blocks_regenerate_if_needed(void);

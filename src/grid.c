@@ -19,6 +19,7 @@ static int active_block_index = -1;  // -1 means no active block
 
 // Persistent occupancy of the 8x8 grid locked cells
 static int grid_occupied[GRID_SIZE][GRID_SIZE];
+static uint16_t grid_color[GRID_SIZE][GRID_SIZE];
 
 // Internal render state
 static int is_animating = 0; // 1 while performing line-clear animation
@@ -127,10 +128,13 @@ static void stamp_piece_into_occupancy(int piece_type, int gx, int gy)
 			if (!tetris_piece_cell(piece_type, row, col)) continue;
 			int cx = gx + col;
 			int cy = gy + row;
-			if (cx >= 0 && cy >= 0 && cx < GRID_SIZE && cy < GRID_SIZE)
-			{
-				grid_occupied[cy][cx] = 1;
-			}
+            if (cx >= 0 && cy >= 0 && cx < GRID_SIZE && cy < GRID_SIZE)
+            {
+                grid_occupied[cy][cx] = 1;
+                uint16_t c = COLOR_TETRIS_RED;
+                if (active_block_index != -1) c = placed_blocks[active_block_index].color;
+                grid_color[cy][cx] = c;
+            }
 		}
 	}
 }
@@ -202,9 +206,10 @@ static void clear_full_lines(void)
 				int x = step;
 				if (x >= 0 && x < GRID_SIZE)
 				{
-					if (grid_occupied[y][x])
+                    if (grid_occupied[y][x])
 					{
 						grid_occupied[y][x] = 0;
+                        grid_color[y][x] = COLOR_TETRIS_RED;
 						spawn_cell_explosion(x, y);
 					}
 				}
@@ -218,9 +223,10 @@ static void clear_full_lines(void)
 				int y = step;
 				if (y >= 0 && y < GRID_SIZE)
 				{
-					if (grid_occupied[y][x])
+                    if (grid_occupied[y][x])
 					{
 						grid_occupied[y][x] = 0;
+                        grid_color[y][x] = COLOR_TETRIS_RED;
 						spawn_cell_explosion(x, y);
 					}
 				}
@@ -268,12 +274,13 @@ void grid_init(void)
     num_placed_blocks = 0;
     active_block_index = -1;
 
-	// Clear occupancy grid
+    // Clear occupancy grid
 	for (int y = 0; y < GRID_SIZE; y++)
 	{
 		for (int x = 0; x < GRID_SIZE; x++)
 		{
 			grid_occupied[y][x] = 0;
+            grid_color[y][x] = COLOR_TETRIS_RED;
 		}
 	}
 	
@@ -311,7 +318,7 @@ void grid_clear(void)
           COLOR_BACKGROUND);
 }
 
-void grid_place_block(int piece_type, int grid_x, int grid_y)
+void grid_place_block(int piece_type, int grid_x, int grid_y, uint16_t color)
 {
     if (num_placed_blocks >= MAX_PLACED_BLOCKS) return;
     
@@ -324,6 +331,7 @@ void grid_place_block(int piece_type, int grid_x, int grid_y)
             placed_blocks[i].grid_x = grid_x;
             placed_blocks[i].grid_y = grid_y;
             placed_blocks[i].is_active = 1;  // Newly placed block is active
+            placed_blocks[i].color = color;
             num_placed_blocks++;
             
             // Set as active block
@@ -657,6 +665,7 @@ void grid_draw_placed_blocks(void)
         {
             if (grid_occupied[y][x])
             {
+                renderer_set_tile_color(grid_color[y][x]);
                 draw_filled_cell(x, y);
             }
         }
@@ -667,6 +676,21 @@ void grid_draw_placed_blocks(void)
     {
         int screen_x = GRID_X_OFFSET + placed_blocks[active_block_index].grid_x * GRID_CELL_SIZE;
         int screen_y = GRID_Y_OFFSET + placed_blocks[active_block_index].grid_y * GRID_CELL_SIZE;
+        uint16_t base = placed_blocks[active_block_index].color;
+        int overlaps = grid_active_overlaps_existing();
+        if (overlaps)
+        {
+            // red tint if overlapping on other pieces
+            uint16_t dark_red = 0x7800;
+            uint16_t tinted = renderer_blend565(base, dark_red, 200);
+            renderer_set_tile_color(tinted);
+        }
+        else
+        {
+            // white tint if free
+            uint16_t light = renderer_blend565(base, 0xFFFF, 96);
+            renderer_set_tile_color(light);
+        }
         draw_tetris_piece_sized(screen_x, screen_y,
             placed_blocks[active_block_index].piece_type, 1, GRID_CELL_SIZE, 0);
     }

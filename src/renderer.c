@@ -43,10 +43,22 @@ static inline uint16_t blend565(uint16_t a, uint16_t b, int t /*0..255*/)
     return (uint16_t)((rr << 11) | (rg << 5) | rb);
 }
 
+uint16_t renderer_blend565(uint16_t a, uint16_t b, int t)
+{
+    return blend565(a, b, t);
+}
+
+static uint16_t g_tile_base_color = COLOR_TETRIS_RED;
+
+void renderer_set_tile_color(uint16_t color)
+{
+    g_tile_base_color = color;
+}
+
 static void draw_bevel_tile_internal(int x, int y, int size, int is_selected)
 {
-    // Red base with darker red shading
-    const uint16_t base = COLOR_TETRIS_RED; // bright red
+    // Base color with darker shading
+    const uint16_t base = g_tile_base_color; // configurable base color
     const uint16_t deep = blend565(base, COLOR_BLACK, 180); // darker red
 
     for (int py = 0; py < size; py++)

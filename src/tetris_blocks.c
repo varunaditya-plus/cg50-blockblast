@@ -312,6 +312,25 @@ static int selected_block = 0;  // First block is selected by default
 
 // Store the generated pieces
 static int stored_pieces[3] = {-1, -1, -1};  // -1 means not generated yet
+static uint16_t stored_piece_colors[3] = {0, 0, 0};
+
+static int get_random(void);
+
+static const uint16_t PIECE_PALETTE[7] = {
+    0xF800, // red
+    0xFD20, // orange
+    0xFEA0, // gold
+    0x07E0, // green
+    0x2F1F, // light blue
+    0x22DF, // blue
+    0xBA3F, // purple
+};
+
+static uint16_t random_palette_color(void)
+{
+    int idx = get_random() % 7;
+    return PIECE_PALETTE[idx];
+}
 
 static int get_random(void)
 {
@@ -416,6 +435,9 @@ void tetris_blocks_draw(void)
             continue;
         }
         
+        // Ensure sidebar uses the assigned piece color for this slot
+        uint16_t color = tetris_blocks_get_piece_color_for_slot(i);
+        renderer_set_tile_color(color);
         draw_tetris_piece(TETRIS_AREA_X, y_pos, piece_type, is_selected);
     }
 }
@@ -434,6 +456,7 @@ void tetris_blocks_consume_selected(void)
 {
     if (selected_block < 0 || selected_block >= 3) return;
     stored_pieces[selected_block] = -1; // mark consumed
+    stored_piece_colors[selected_block] = 0;
 
     // Move selection to next available piece if any
     for (int i = 0; i < 3; i++)
@@ -578,6 +601,7 @@ void tetris_generate_valid_pieces(void)
     for (int i = 0; i < 3; i++)
     {
         stored_pieces[i] = -1;
+        stored_piece_colors[i] = 0;
     }
     
     // Generate 3 valid pieces
@@ -639,8 +663,32 @@ void tetris_generate_valid_pieces(void)
         }
         
         stored_pieces[slot] = piece_type;
+        stored_piece_colors[slot] = random_palette_color();
     }
     
     // Reset selection to first piece
     selected_block = 0;
+}
+
+uint16_t tetris_blocks_get_piece_color_for_slot(int slot)
+{
+    if (slot < 0 || slot >= 3) return COLOR_TETRIS_RED;
+    if (stored_pieces[slot] < 0) return COLOR_TETRIS_RED;
+    uint16_t c = stored_piece_colors[slot];
+    return c ? c : COLOR_TETRIS_RED;
+}
+
+uint16_t tetris_blocks_get_color_for_piece_type(int piece_type)
+{
+    // Find the piece in the sidebar and return its assigned color
+    for (int i = 0; i < 3; i++)
+    {
+        if (stored_pieces[i] == piece_type)
+        {
+            uint16_t c = stored_piece_colors[i];
+            return c ? c : COLOR_TETRIS_RED;
+        }
+    }
+    // Default
+    return COLOR_TETRIS_RED;
 }
