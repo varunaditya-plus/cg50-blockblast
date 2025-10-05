@@ -136,7 +136,7 @@ void renderer_redraw_all(void)
 void renderer_draw_footer(void)
 {
     const char *line1 = "F1=RESET";
-    const char *line2 = "F6=SAVE";
+    const char *line2 = "F6=SAVE SCORE";
     char line3[32] = "";
     if (grid_get_active_block() != -1)
     {

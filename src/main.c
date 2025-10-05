@@ -17,6 +17,22 @@ int main(void)
         FILE *fp = fopen(path, "a");
         if(fp) fclose(fp);
     }
+    // Try to load the last score from /score.txt and display it
+    {
+        const char *path = "/score.txt";
+        FILE *fp = fopen(path, "r");
+        int last = -1;
+        if(fp)
+        {
+            int value = 0;
+            while(fscanf(fp, "%d", &value) == 1) { last = value; }
+            fclose(fp);
+        }
+        if(last >= 0)
+        {
+            score_set_loaded(last);
+        }
+    }
     
     renderer_redraw_all();
     
@@ -60,13 +76,29 @@ int main(void)
         // On F6, write the current score to /score.txt
         if(key.key == KEY_F6)
         {
-            const char *path = "/score.txt";
-            FILE *fp = fopen(path, "a");
-            if(fp)
+            int current = score_get_current();
+            // Read latest saved score from file and only save if current > latest
+            int last_saved = -1;
             {
-                fprintf(fp, "%d\n", score_get_current());
-                fflush(fp);
-                fclose(fp);
+                const char *path_r = "/score.txt";
+                FILE *fr = fopen(path_r, "r");
+                if(fr)
+                {
+                    int v = 0;
+                    while(fscanf(fr, "%d", &v) == 1) { last_saved = v; }
+                    fclose(fr);
+                }
+            }
+            if(last_saved < 0 || current > last_saved)
+            {
+                const char *path_w = "/score.txt";
+                FILE *fw = fopen(path_w, "a");
+                if(fw)
+                {
+                    fprintf(fw, "%d\n", current);
+                    fflush(fw);
+                    fclose(fw);
+                }
             }
         }
         

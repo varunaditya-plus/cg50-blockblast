@@ -15,5 +15,8 @@ void score_add_placement(void);
 void score_add_points(int points);
 void score_clear_lines(void);
 void score_draw(void);
+// Display helper for showing a score loaded from file under current score
+void score_set_loaded(int value);
+int score_get_loaded(void);
 
 #endif // SCORE_H

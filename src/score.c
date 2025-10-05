@@ -2,6 +2,7 @@
 #include "score.h"
 #include "font.h"
 #include "grid.h"
+#include <stdio.h>
 
 // Grid colors (RGB565 format for CG-50)
 #define COLOR_BACKGROUND 0x3270  // #364C87 converted to RGB565
@@ -14,6 +15,7 @@
 
 // Score tracking
 static int current_score = 0;
+static int loaded_score = -1; // -1 means not set
 
 void score_init(void)
 {
@@ -47,11 +49,8 @@ void score_draw(void)
     int score_x = GRID_X_OFFSET + GRID_SIZE * GRID_CELL_SIZE + 10; // Right of grid
     int score_y = GRID_Y_OFFSET + 10; // Below top of grid
     
-    // Draw "SCORE:" label
-    font_draw_text(score_x, score_y, "SCORE:");
-    
-    // Convert score to string and draw it
-    char score_str[20];
+	// Build single-line: "SCORE: <value>"
+	char score_str[20];
     int score = current_score;
     
     // Handle zero case
@@ -79,6 +78,30 @@ void score_draw(void)
         score_str[temp_len] = '\0';
     }
     
-    // Draw the score number
-    font_draw_text(score_x, score_y + 12, score_str);
+	// Draw single-line label and value
+	char score_line[32];
+	snprintf(score_line, sizeof(score_line), "SCORE: %s", score_str);
+	font_draw_text(score_x, score_y, score_line);
+
+    // If theres a loaded score show it below
+    if (loaded_score >= 0)
+    {
+		if (current_score > loaded_score)
+		{
+			loaded_score = current_score;
+		}
+        char loaded_str[32];
+        snprintf(loaded_str, sizeof(loaded_str), "HSCORE: %d", loaded_score);
+		font_draw_text(score_x, score_y + 12, loaded_str);
+    }
+}
+
+void score_set_loaded(int value)
+{
+    loaded_score = value;
+}
+
+int score_get_loaded(void)
+{
+    return loaded_score;
 }
