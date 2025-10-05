@@ -1,5 +1,7 @@
 #include <gint/display.h>
 #include "renderer.h"
+#include <stdio.h>
+#include <string.h>
 #include "font.h"
 #include "grid.h"
 #include "tetris_blocks.h"
@@ -133,7 +135,20 @@ void renderer_redraw_all(void)
 
 void renderer_draw_footer(void)
 {
-    int x = 4;
-    int y = SCREEN_HEIGHT - 10;
-    font_draw_text(x, y, "F1=RESET, F6=SAVE, MENU=EXIT GAME");
+    const char *line1 = "F1=RESET";
+    const char *line2 = "F6=SAVE";
+    char line3[32] = "";
+    if (grid_get_active_block() != -1)
+    {
+        snprintf(line3, sizeof(line3), "%s", "EXIT=UNSELECT");
+    }
+    int x = GRID_X_OFFSET + GRID_SIZE * GRID_CELL_SIZE + 10;
+    int y = GRID_Y_OFFSET + 20 + 36;
+    int line_step = 12;
+    font_draw_text(x, y + 0 * line_step, line1);
+    font_draw_text(x, y + 1 * line_step, line2);
+    if (line3[0] != '\0')
+    {
+        font_draw_text(x, y + 2 * line_step, line3);
+    }
 }

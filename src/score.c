@@ -44,8 +44,8 @@ void score_clear_lines(void)
 void score_draw(void)
 {
     // Position score on the right side of the grid
-    int score_x = GRID_X_OFFSET + GRID_SIZE * GRID_CELL_SIZE + 20; // Right of grid
-    int score_y = GRID_Y_OFFSET + 20; // Below top of grid
+    int score_x = GRID_X_OFFSET + GRID_SIZE * GRID_CELL_SIZE + 10; // Right of grid
+    int score_y = GRID_Y_OFFSET + 10; // Below top of grid
     
     // Draw "SCORE:" label
     font_draw_text(score_x, score_y, "SCORE:");
