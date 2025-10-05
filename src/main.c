@@ -1,13 +1,21 @@
 #include <gint/display.h>
 #include <gint/keyboard.h>
+#include <stdio.h>
 #include "game_state.h"
 #include "input_handler.h"
 #include "renderer.h"
 #include "grid.h"
+#include "score.h"
 
 int main(void)
 {
     game_state_reset();
+    // Ensure score file exists in calculator's main directory
+    {
+        const char *path = "/score.txt";
+        FILE *fp = fopen(path, "a");
+        if(fp) fclose(fp);
+    }
     
     while(1)
     {
@@ -44,6 +52,19 @@ int main(void)
         // process the input
         input_action_t action = input_handle_key(key);
         input_process_action(action);
+        
+        // On F6, write the current score to /score.txt
+        if(key.key == KEY_F6)
+        {
+            const char *path = "/score.txt";
+            FILE *fp = fopen(path, "a");
+            if(fp)
+            {
+                fprintf(fp, "%d\n", score_get_current());
+                fflush(fp);
+                fclose(fp);
+            }
+        }
         
         dupdate();
     }
