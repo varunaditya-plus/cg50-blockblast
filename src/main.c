@@ -7,6 +7,7 @@
 #include "grid.h"
 #include "score.h"
 #include "renderer.h"
+#include "tetris_blocks.h"
 
 int main(void)
 {
@@ -98,6 +99,15 @@ int main(void)
                     fprintf(fw, "%d\n", current);
                     fflush(fw);
                     fclose(fw);
+                    // Update loaded to current so 'unsaved' disappears
+                    score_set_loaded(current);
+                    // Quick redraw of right panel to reflect changes
+                    dclear(COLOR_BACKGROUND);
+                    grid_draw();
+                    grid_draw_placed_blocks();
+                    grid_draw_score();
+                    tetris_blocks_draw();
+                    renderer_draw_footer();
                 }
             }
         }

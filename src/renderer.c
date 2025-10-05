@@ -143,7 +143,7 @@ void renderer_draw_footer(void)
         snprintf(line3, sizeof(line3), "%s", "EXIT=UNSELECT");
     }
     int x = GRID_X_OFFSET + GRID_SIZE * GRID_CELL_SIZE + 10;
-    int y = GRID_Y_OFFSET + 20 + 36;
+    int y = GRID_Y_OFFSET + 20 + 46;
     int line_step = 12;
     font_draw_text(x, y + 0 * line_step, line1);
     font_draw_text(x, y + 1 * line_step, line2);

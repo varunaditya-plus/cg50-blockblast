@@ -86,13 +86,14 @@ void score_draw(void)
     // If theres a loaded score show it below
     if (loaded_score >= 0)
     {
-		if (current_score > loaded_score)
-		{
-			loaded_score = current_score;
-		}
         char loaded_str[32];
         snprintf(loaded_str, sizeof(loaded_str), "HSCORE: %d", loaded_score);
 		font_draw_text(score_x, score_y + 12, loaded_str);
+        // Show UNSAVED if current score exceeds last saved score
+        if (current_score > loaded_score)
+        {
+            font_draw_text(score_x, score_y + 24, "UNSAVED");
+        }
     }
 }
 
