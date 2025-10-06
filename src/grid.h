@@ -62,5 +62,7 @@ uint16_t grid_get_active_block_color(void);
 // Score management
 int grid_get_score(void);
 void grid_draw_score(void);
+// Check if placing a piece at a position would clear any lines
+int grid_would_clear_lines(int piece_type, int grid_x, int grid_y);
 
 #endif // GRID_H

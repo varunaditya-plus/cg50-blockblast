@@ -711,3 +711,69 @@ void grid_draw_score(void)
 {
     score_draw();
 }
+
+int grid_would_clear_lines(int piece_type, int grid_x, int grid_y)
+{
+    // Creates temporary copy of the occupancy grid
+    int temp_occupied[GRID_SIZE][GRID_SIZE];
+    for (int y = 0; y < GRID_SIZE; y++)
+    {
+        for (int x = 0; x < GRID_SIZE; x++)
+        {
+            temp_occupied[y][x] = grid_occupied[y][x];
+        }
+    }
+    
+    // Place the piece in the temporary grid
+    for (int row = 0; row < 4; row++)
+    {
+        for (int col = 0; col < 4; col++)
+        {
+            if (!tetris_piece_cell(piece_type, row, col)) continue;
+            int cx = grid_x + col;
+            int cy = grid_y + row;
+            if (cx >= 0 && cy >= 0 && cx < GRID_SIZE && cy < GRID_SIZE)
+            {
+                temp_occupied[cy][cx] = 1;
+            }
+        }
+    }
+    
+    // Check for full rows and columns in the temporary grid
+    int full_rows[GRID_SIZE] = {0};
+    int full_cols[GRID_SIZE] = {0};
+    
+    // Detect full rows
+    for (int y = 0; y < GRID_SIZE; y++)
+    {
+        int all_filled = 1;
+        for (int x = 0; x < GRID_SIZE; x++)
+        {
+            if (!temp_occupied[y][x]) { all_filled = 0; break; }
+        }
+        full_rows[y] = all_filled;
+    }
+    
+    // Detect full columns
+    for (int x = 0; x < GRID_SIZE; x++)
+    {
+        int all_filled = 1;
+        for (int y = 0; y < GRID_SIZE; y++)
+        {
+            if (!temp_occupied[y][x]) { all_filled = 0; break; }
+        }
+        full_cols[x] = all_filled;
+    }
+    
+    // Check if any lines would be cleared
+    for (int y = 0; y < GRID_SIZE; y++)
+    {
+        if (full_rows[y]) return 1; // Would clear a row
+    }
+    for (int x = 0; x < GRID_SIZE; x++)
+    {
+        if (full_cols[x]) return 1; // Would clear a column
+    }
+    
+    return 0; // No lines would be cleared
+}

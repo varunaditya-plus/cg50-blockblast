@@ -15,6 +15,7 @@ input_action_t input_handle_key(key_event_t key)
         case KEY_F1:
         case KEY_F2:
             return INPUT_ACTION_RESET;
+        case KEY_OPTN:
         case KEY_EXE:
             return INPUT_ACTION_PLACE_BLOCK;
         case KEY_UP:

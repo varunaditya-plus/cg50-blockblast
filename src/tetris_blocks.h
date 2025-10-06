@@ -16,7 +16,7 @@
 #define TETRIS_SPACING 70  // Vertical spacing between blocks
 
 // Tetris piece definitions (4x4 matrices)
-#define TETRIS_PIECES 39
+#define TETRIS_PIECES 44
 
 // Piece difficulty categories
 typedef enum {

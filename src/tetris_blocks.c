@@ -265,11 +265,51 @@ static const int tetris_pieces[TETRIS_PIECES][4][4] = {
         {1, 1, 0, 0},
         {0, 0, 0, 0},
         {0, 0, 0, 0}
+    },
+    
+    // 1x1 block
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    },
+    
+    // 2x1 block
+    {
+        {0, 0, 0, 0},
+        {0, 1, 1, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    },
+    
+    // 1x2 block
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 0, 0},
+        {0, 0, 0, 0}
+    },
+    
+    // 3x1 block
+    {
+        {0, 0, 0, 0},
+        {0, 1, 1, 1},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
+    },
+    
+    // 1x3 block
+    {
+        {0, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 0, 0},
+        {0, 1, 0, 0}
     }
 };
 
 // Piece difficulty mapping
-// 39 pieces: I-piece (0-3): easy, O-piece (4-7): easy, T-piece (8-11): hard, S-piece (12-15): hard, Z-piece (16-19): hard, J-piece (20-23): medium, L-piece (24-27): medium, 2x3 (28): medium, 3x2 (29): medium, 3x3 (30): rare, L variations (31-34): medium, corner L (35-38): medium
+// 44 pieces: I-piece (0-3): easy, O-piece (4-7): easy, T-piece (8-11): hard, S-piece (12-15): hard, Z-piece (16-19): hard, J-piece (20-23): medium, L-piece (24-27): medium, 2x3 (28): medium, 3x2 (29): medium, 3x3 (30): rare, L variations (31-34): medium, corner L (35-38): medium, small blocks (39-43): rare
 static const piece_difficulty_t piece_difficulties[TETRIS_PIECES] = {
     // I-piece rotations (0-3)
     PIECE_EASY, PIECE_EASY, PIECE_EASY, PIECE_EASY,
@@ -294,7 +334,13 @@ static const piece_difficulty_t piece_difficulties[TETRIS_PIECES] = {
     // L piece variations (31-34)
     PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM,
     // Corner L piece variations (35-38)
-    PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM
+    PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM, PIECE_MEDIUM,
+    // Small blocks for line breaking (39-43)
+    PIECE_RARE,  // 1x1 block
+    PIECE_RARE,  // 2x1 block  
+    PIECE_RARE,  // 1x2 block
+    PIECE_RARE,  // 3x1 block
+    PIECE_RARE   // 1x3 block
 };
 
 int tetris_piece_cell(int piece_type, int row, int col)
@@ -338,6 +384,28 @@ static int get_random(void)
     uint32_t time = clock();
     random_seed = (random_seed * 1103515245 + 12345) ^ time;
     return (random_seed >> 16) & 0x7FFF;
+}
+
+// Check if a small block would perfectly fit to break a line
+static int small_block_would_break_line(int piece_type)
+{
+    // Only check small blocks (39-43)
+    if (piece_type < 39 || piece_type > 43) return 0;
+    
+    // Check all possible positions on the grid
+    for (int y = 0; y < GRID_SIZE; y++)
+    {
+        for (int x = 0; x < GRID_SIZE; x++)
+        {
+            // Check if this piece can be placed here and would clear lines
+            if (grid_can_place(piece_type, x, y) && grid_would_clear_lines(piece_type, x, y))
+            {
+                return 1; // This small block would break a line
+            }
+        }
+    }
+    
+    return 0; // No line breaking opportunity found
 }
 
 void tetris_blocks_init(void)
@@ -620,6 +688,7 @@ void tetris_generate_valid_pieces(void)
     int spawned_types[TETRIS_PIECES] = {0}; // Track which types we've spawned
     int attempts = 0;
     const int max_attempts = 100; // Prevent infinite loops
+    const int small_block_chance = 8; // 8% chance for small blocks (1-100)
     
     // Clear current pieces
     for (int i = 0; i < 3; i++)
@@ -634,11 +703,34 @@ void tetris_generate_valid_pieces(void)
         int piece_type = -1;
         attempts = 0;
         
+        // Check if we should try to spawn a small block for line breaking
+        int try_small_block = (get_random() % 100) < small_block_chance;
+        
         // Keep trying until we find a valid piece
         while (attempts < max_attempts)
         {
+            int candidate;
+            
+            // If we should try small blocks and haven't tried them yet
+            if (try_small_block && attempts < 5)
+            {
+                // Try small blocks (39-43) that would break lines
+                for (int small_piece = 39; small_piece <= 43; small_piece++)
+                {
+                    if (!spawned_types[small_piece] && 
+                        tetris_piece_is_placeable(small_piece) &&
+                        small_block_would_break_line(small_piece))
+                    {
+                        piece_type = small_piece;
+                        spawned_types[small_piece] = 1;
+                        break;
+                    }
+                }
+                if (piece_type != -1) break;
+            }
+            
             // Generate a weighted random piece
-            int candidate = tetris_generate_weighted_piece();
+            candidate = tetris_generate_weighted_piece();
             
             // Check if we already spawned this type
             if (spawned_types[candidate])
